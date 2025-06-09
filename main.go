@@ -77,6 +77,16 @@ func main() {
 
         w.Write(data)
     })))
+
+    mux.HandleFunc("/robots.txt", func(w http.ResponseWriter, r *http.Request) {
+        if r.Method != http.MethodGet {
+            http.Error(w, "Method not allowed", http.StatusMethodNotAllowed)
+            return
+        }
+        robotsTxt := []byte("User-agent: *\nDisallow: /private/")
+        w.Header().Set("Content-Type", "text/plain")
+        w.Write(robotsTxt)
+    })
 	
 	fmt.Println("Server starting on :8080")
 	log.Fatal(http.ListenAndServe(":8080", mux))
