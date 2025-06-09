@@ -1,22 +1,21 @@
 package main
 
 import (
+	"embed"
 	"encoding/json"
 	"fmt"
 	"html/template"
 	"log"
-	"math/rand"
+	"mime"
 	"net/http"
-	"strconv"
-	"time"
-    "path/filepath"
-    "strings"
-    "mime"
-    "embed"
-    "github.com/tdewolff/minify"
-    "github.com/tdewolff/minify/css"
-    "github.com/tdewolff/minify/js"
+	"path/filepath"
+	"strings"
+
+	"github.com/tdewolff/minify"
+	"github.com/tdewolff/minify/css"
+	"github.com/tdewolff/minify/js"
 )
+
 //go:embed static/**/*
 var staticFiles embed.FS
 
