@@ -24,7 +24,11 @@
       content="sorting algorithm, sorting algorithm visualization, sorting algorithm visualizer, sorting algorithm animation, sorting algorithm demo"
     />
   </head>
-  <body x-data="sortingApp()" x-init="$watch('arraySize', () => generateArray());" x-cloak>
+  <body
+    x-data="sortingApp()"
+    x-init="$watch('arraySize', () => generateArray());"
+    x-cloak
+  >
     <div class="page-wrapper">
       <div class="left-column">
         <h1>Sorting Algorithm Visualizer</h1>
@@ -59,7 +63,14 @@
           </div>
           <div class="speed-control">
             <label for="speedControl">Speed:</label>
-            <input type="range" x-model="speed" min="1" max="12" step="1" id="speedControl" />
+            <input
+              type="range"
+              x-model="speed"
+              min="1"
+              max="12"
+              step="1"
+              id="speedControl"
+            />
             <span x-text="speed"></span>
           </div>
         </div>
