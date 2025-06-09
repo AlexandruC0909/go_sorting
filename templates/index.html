@@ -133,7 +133,7 @@
           <template x-for="(value, index) in currentArray" :key="index">
             <div
               class="bar"
-              :style="'height: ' + (value * 4) + 'px; width: ' + Math.max(8, 800/currentArray.length) + 'px'"
+              :style="'height: calc(' + value + '% * 0.8); width: ' + Math.max(8, 800 / currentArray.length) + 'px'"
               :class="{
                            'comparing': comparingIndices.includes(index),
                            'swapping': swappingIndices.includes(index),

@@ -81,19 +81,16 @@ function sortingApp() {
     selectedAlgorithmDetails: null,
 
     init() {
-      this.updateAlgorithmDetails(); // Initial call to set details for the default algorithm
-      this.generateArray(); // Generates initial array
-      this.watchAlgorithm(); // Add this line to set up the watcher
+      this.updateAlgorithmDetails(); 
+      this.generateArray(); 
+      this.watchAlgorithm(); 
     },
 
     watchAlgorithm() {
       this.$watch('algorithm', (newValue, oldValue) => {
         console.log('Algorithm changed from', oldValue, 'to', newValue);
         this.updateAlgorithmDetails();
-        this.resetVisualization(); // Reset visualization state
-        // Optional: you might want to regenerate the array or clear it
-        // this.generateArray(); // or this.currentArray = [];
-        // For now, just updating details and resetting visualization is fine.
+        this.resetVisualization(); 
       });
     },
 
@@ -101,12 +98,11 @@ function sortingApp() {
       if (this.algorithm && algorithmData[this.algorithm]) {
         this.selectedAlgorithmDetails = algorithmData[this.algorithm];
       } else {
-        this.selectedAlgorithmDetails = null; // Or some default state
+        this.selectedAlgorithmDetails = null; 
       }
     },
 
     async generateArray() {
-      // this.updateAlgorithmDetails(); // REMOVE this line, watcher handles it.
       try {
         const response = await fetch("/generate?size=" + this.arraySize);
         const data = await response.json();
@@ -145,7 +141,7 @@ function sortingApp() {
     },
 
     async startSort() {
-      this.updateAlgorithmDetails(); // Add this line
+      this.updateAlgorithmDetails(); 
       this.isLoading = true;
       this.sortResult = null;
       this.currentStep = -1;
