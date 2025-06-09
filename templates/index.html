@@ -24,7 +24,7 @@
       content="sorting algorithm, sorting algorithm visualization, sorting algorithm visualizer, sorting algorithm animation, sorting algorithm demo"
     />
   </head>
-  <body x-data="sortingApp()" x-cloak>
+  <body x-data="sortingApp()" x-init="$watch('arraySize', () => generateArray());" x-cloak>
     <div class="page-wrapper">
       <div class="left-column">
         <h1>Sorting Algorithm Visualizer</h1>
