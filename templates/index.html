@@ -12,10 +12,10 @@
     ></script>
   </head>
   <body x-data="sortingApp()" x-cloak>
-    <div class="container">
-      <h1>Sorting Algorithm Visualizer</h1>
+    <div class="page-wrapper">
+      <div class="left-column">
+        <h1>Sorting Algorithm Visualizer</h1>
 
-      <div class="controls">
         <select x-model="algorithm">
           <option value="bubble">Bubble Sort</option>
           <option value="selection">Selection Sort</option>
@@ -23,85 +23,101 @@
           <option value="quick">Quick Sort</option>
         </select>
 
-        <div class="speed-control">
-          <label for="arraySizeSlider">Array Size:</label>
-          <input
-            type="range"
-            id="arraySizeSlider"
-            x-model="arraySize"
-            min="5"
-            max="50"
-            step="1"
-          />
-          <span
-            x-text="arraySize"
-            style="min-width: 25px; text-align: right"
-          ></span>
-        </div>
-
-        <button
-          class="btn btn-secondary"
-          @click="generateArray()"
-          :disabled="isLoading || isPlaying"
-        >
-          Generate Array
-        </button>
-        <button
-          class="btn"
-          :class="{'btn-primary': !isPlaying, 'btn-warning': isPlaying}"
-          @click="isPlaying ? pauseAnimation() : startOrResumeAnimation()"
-          :disabled="isLoading || (currentArray.length === 0 && !isPlaying)"
-        >
-          <span x-text="isPlaying ? 'Pause' : 'Play'"></span>
-        </button>
-
-        <div class="speed-control">
-          <label>Speed:</label>
-          <input type="range" x-model="speed" min="1" max="12" step="1" />
-          <span x-text="speed"></span>
-        </div>
-      </div>
-
-      <div class="array-display" x-show="currentArray.length > 0">
-        Array: [<span x-text="currentArray.join(', ')"></span>]
-      </div>
-
-      <div class="visualization">
-        <template x-for="(value, index) in currentArray" :key="index">
-          <div
-            class="bar"
-            :style="'height: ' + (value * 4) + 'px; width: ' + Math.max(8, 800/currentArray.length) + 'px'"
-            :class="{
-                         'comparing': comparingIndices.includes(index),
-                         'swapping': swappingIndices.includes(index),
-                         'sorted': sortedIndices.includes(index)
-                     }"
-          >
-            <div class="bar-value" x-text="value"></div>
+        <div class="controls">
+          <div class="speed-control">
+            <label for="arraySizeSlider">Array Size:</label>
+            <input
+              type="range"
+              id="arraySizeSlider"
+              x-model="arraySize"
+              min="5"
+              max="50"
+              step="1"
+            />
+            <span
+              x-text="arraySize"
+              style="min-width: 25px; text-align: right"
+            ></span>
           </div>
-        </template>
+
+          <button
+            class="btn btn-secondary"
+            @click="generateArray()"
+            :disabled="isLoading || isPlaying"
+          >
+            Generate Array
+          </button>
+          <button
+            class="btn"
+            :class="{'btn-primary': !isPlaying, 'btn-warning': isPlaying}"
+            @click="isPlaying ? pauseAnimation() : startOrResumeAnimation()"
+            :disabled="isLoading || (currentArray.length === 0 && !isPlaying)"
+          >
+            <span x-text="isPlaying ? 'Pause' : 'Play'"></span>
+          </button>
+
+          <div class="speed-control">
+            <label>Speed:</label>
+            <input type="range" x-model="speed" min="1" max="12" step="1" />
+            <span x-text="speed"></span>
+          </div>
+        </div>
+
+        <div class="algorithm-details" x-show="selectedAlgorithmDetails">
+          <h3 x-text="selectedAlgorithmDetails?.name || 'Algorithm Details'"></h3>
+          <p><strong>Description:</strong> <span x-text="selectedAlgorithmDetails?.description || 'N/A'"></span></p>
+          <h4>Complexity:</h4>
+          <ul>
+            <li><strong>Best Case:</strong> <span x-text="selectedAlgorithmDetails?.bestCase || 'N/A'"></span></li>
+            <li><strong>Average Case:</strong> <span x-text="selectedAlgorithmDetails?.averageCase || 'N/A'"></span></li>
+            <li><strong>Worst Case:</strong> <span x-text="selectedAlgorithmDetails?.worstCase || 'N/A'"></span></li>
+            <li><strong>Space Complexity:</strong> <span x-text="selectedAlgorithmDetails?.space || 'N/A'"></span></li>
+          </ul>
+        </div>
+
+        <div class="array-display" x-show="currentArray.length > 0">
+          Array: [<span x-text="currentArray.join(', ')"></span>]
+        </div>
+
+        <div
+          class="step-info"
+          x-show="currentStep >= 0 && sortResult && sortResult.steps"
+        >
+          <div>
+            Algorithm: <span x-text="sortResult?.name || 'Unknown'"></span>
+          </div>
+          <div>
+            Step: <span x-text="currentStep + 1"></span> /
+            <span x-text="sortResult?.steps?.length || 0"></span>
+          </div>
+          <div x-show="comparingIndices.length > 0">
+            Comparing indices: <span x-text="comparingIndices.join(', ')"></span>
+          </div>
+          <div x-show="swappingIndices.length > 0">
+            Swapping indices: <span x-text="swappingIndices.join(', ')"></span>
+          </div>
+        </div>
+
+        <div class="loading" x-show="isLoading">Generating sorting steps...</div>
       </div>
 
-      <div
-        class="step-info"
-        x-show="currentStep >= 0 && sortResult && sortResult.steps"
-      >
-        <div>
-          Algorithm: <span x-text="sortResult?.name || 'Unknown'"></span>
-        </div>
-        <div>
-          Step: <span x-text="currentStep + 1"></span> /
-          <span x-text="sortResult?.steps?.length || 0"></span>
-        </div>
-        <div x-show="comparingIndices.length > 0">
-          Comparing indices: <span x-text="comparingIndices.join(', ')"></span>
-        </div>
-        <div x-show="swappingIndices.length > 0">
-          Swapping indices: <span x-text="swappingIndices.join(', ')"></span>
+      <div class="right-column">
+        <div class="visualization">
+          <template x-for="(value, index) in currentArray" :key="index">
+            <div
+              class="bar"
+              :style="'height: ' + (value * 4) + 'px; width: ' + Math.max(8, 800/currentArray.length) + 'px'"
+              :class="{
+                           'comparing': comparingIndices.includes(index),
+                           'swapping': swappingIndices.includes(index),
+                           'sorted': sortedIndices.includes(index)
+                       }"
+            >
+              <div class="bar-value" x-text="value"></div>
+            </div>
+          </template>
         </div>
       </div>
-
-      <div class="loading" x-show="isLoading">Generating sorting steps...</div>
     </div>
   </body>
 </html>

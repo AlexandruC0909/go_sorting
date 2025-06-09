@@ -1,4 +1,39 @@
 function sortingApp() {
+  const algorithmData = {
+    bubble: {
+      name: "Bubble Sort",
+      description: "A simple comparison sort algorithm. It repeatedly steps through the list, compares adjacent elements and swaps them if they are in the wrong order.",
+      bestCase: "O(n)",
+      averageCase: "O(n^2)",
+      worstCase: "O(n^2)",
+      space: "O(1)"
+    },
+    selection: {
+      name: "Selection Sort",
+      description: "An in-place comparison sort. It divides the input list into two parts: a sorted sublist of items which is built up from left to right and a sublist of the remaining unsorted items.",
+      bestCase: "O(n^2)",
+      averageCase: "O(n^2)",
+      worstCase: "O(n^2)",
+      space: "O(1)"
+    },
+    insertion: {
+      name: "Insertion Sort",
+      description: "A simple sorting algorithm that builds the final sorted array one item at a time. It is much less efficient on large lists than more advanced algorithms such as quicksort, heapsort, or merge sort.",
+      bestCase: "O(n)",
+      averageCase: "O(n^2)",
+      worstCase: "O(n^2)",
+      space: "O(1)"
+    },
+    quick: {
+      name: "Quick Sort",
+      description: "An efficient, divide-and-conquer sorting algorithm. It works by selecting a 'pivot' element from the array and partitioning the other elements into two sub-arrays, according to whether they are less than or greater than the pivot.",
+      bestCase: "O(n log n)",
+      averageCase: "O(n log n)",
+      worstCase: "O(n^2)",
+      space: "O(log n)"
+    }
+  };
+
   return {
     algorithm: "bubble",
     arraySize: 20,
@@ -11,12 +46,35 @@ function sortingApp() {
     comparingIndices: [],
     swappingIndices: [],
     sortedIndices: [],
+    selectedAlgorithmDetails: null,
 
     init() {
-      this.generateArray();
+      this.updateAlgorithmDetails(); // Initial call to set details for the default algorithm
+      this.generateArray(); // Generates initial array
+      this.watchAlgorithm(); // Add this line to set up the watcher
+    },
+
+    watchAlgorithm() {
+      this.$watch('algorithm', (newValue, oldValue) => {
+        console.log('Algorithm changed from', oldValue, 'to', newValue);
+        this.updateAlgorithmDetails();
+        this.resetVisualization(); // Reset visualization state
+        // Optional: you might want to regenerate the array or clear it
+        // this.generateArray(); // or this.currentArray = [];
+        // For now, just updating details and resetting visualization is fine.
+      });
+    },
+
+    updateAlgorithmDetails() {
+      if (this.algorithm && algorithmData[this.algorithm]) {
+        this.selectedAlgorithmDetails = algorithmData[this.algorithm];
+      } else {
+        this.selectedAlgorithmDetails = null; // Or some default state
+      }
     },
 
     async generateArray() {
+      // this.updateAlgorithmDetails(); // REMOVE this line, watcher handles it.
       try {
         const response = await fetch("/generate?size=" + this.arraySize);
         const data = await response.json();
@@ -55,6 +113,7 @@ function sortingApp() {
     },
 
     async startSort() {
+      this.updateAlgorithmDetails(); // Add this line
       this.isLoading = true;
       this.sortResult = null;
       this.currentStep = -1;
