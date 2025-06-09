@@ -9,8 +9,19 @@ import (
 	"net/http"
 	"strconv"
 	"time"
+    "path/filepath"
+    "strings"
+    "mime"
+    "embed"
+    "github.com/tdewolff/minify"
+    "github.com/tdewolff/minify/css"
+    "github.com/tdewolff/minify/js"
 )
+//go:embed static/**/*
+var staticFiles embed.FS
 
+//go:embed templates/*.html
+var htmlFiles embed.FS
 type SortStep struct {
 	Array     []int `json:"array"`
 	Comparing []int `json:"comparing"`
@@ -24,15 +35,51 @@ type SortResult struct {
 }
 
 func main() {
-	http.HandleFunc("/", homeHandler)
-	http.HandleFunc("/sort", sortHandler)
-	http.HandleFunc("/generate", generateHandler)
+    mux := http.NewServeMux()
+	mux.HandleFunc("/", homeHandler)
+	mux.HandleFunc("/sort", sortHandler)
+	mux.HandleFunc("/generate", generateHandler)
 
-	fs := http.FileServer(http.Dir("static"))
-	http.Handle("/static/", http.StripPrefix("/static/", fs))
+
+    mux.Handle("/static/", http.StripPrefix("/static/", http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+        filePath := r.URL.Path
+
+		isJS := strings.HasSuffix(filePath, ".js")
+		isCSS := strings.HasSuffix(filePath, ".css")
+
+        data, err := staticFiles.ReadFile("static/" + filePath)
+        if err != nil {
+            http.NotFound(w, r)
+            return
+        }
+
+        if isJS || isCSS {
+            mediaType := "application/javascript"
+			if isCSS {
+				mediaType = "text/css"
+			}
+
+            minifiedData, err := minifyContent(data, mediaType)
+            if err != nil {
+                http.Error(w, "Failed to minify CSS", http.StatusInternalServerError)
+                return
+            }
+            data = minifiedData
+        }
+
+        ext := strings.ToLower(filepath.Ext(filePath))
+        mimeType := mime.TypeByExtension(ext)
+        if mimeType != "" {
+            w.Header().Set("Content-Type", mimeType)
+        } else {
+            w.Header().Set("Content-Type", "application/octet-stream")
+        }
+
+        w.Write(data)
+    })))
 	
 	fmt.Println("Server starting on :8080")
-	log.Fatal(http.ListenAndServe(":8080", nil))
+	log.Fatal(http.ListenAndServe(":8080", mux))
 }
 
 func homeHandler(w http.ResponseWriter, r *http.Request) {
@@ -271,3 +318,12 @@ func copyArray(arr []int) []int {
 	copy(result, arr)
 	return result
 }
+
+func minifyContent(content []byte, mediaType string) ([]byte, error) {
+	m := minify.New()
+	m.AddFunc("text/css", css.Minify)
+	m.AddFunc("application/javascript", js.Minify)
+
+	return m.Bytes(mediaType, content)
+}
+
