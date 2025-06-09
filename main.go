@@ -22,6 +22,7 @@ var staticFiles embed.FS
 
 //go:embed templates/*.html
 var htmlFiles embed.FS
+
 type SortStep struct {
 	Array     []int `json:"array"`
 	Comparing []int `json:"comparing"`
@@ -39,7 +40,6 @@ func main() {
 	mux.HandleFunc("/", homeHandler)
 	mux.HandleFunc("/sort", sortHandler)
 	mux.HandleFunc("/generate", generateHandler)
-
 
     mux.Handle("/static/", http.StripPrefix("/static/", http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
         filePath := r.URL.Path
@@ -83,7 +83,13 @@ func main() {
 }
 
 func homeHandler(w http.ResponseWriter, r *http.Request) {
-	t, err := template.ParseFiles("templates/index.html")
+	data, err := htmlFiles.ReadFile("templates/index.html")
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return
+	}
+	
+	t, err := template.New("index").Parse(string(data))
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return
@@ -135,6 +141,14 @@ func sortHandler(w http.ResponseWriter, r *http.Request) {
 		result = insertionSort(request.Array)
 	case "quick":
 		result = quickSort(request.Array)
+	case "merge":
+		result = mergeSort(request.Array)
+	case "heap":
+		result = heapSort(request.Array)
+	case "shell":
+		result = shellSort(request.Array)
+	case "cocktail":
+		result = cocktailShakerSort(request.Array)
 	default:
 		result = bubbleSort(request.Array)
 	}
@@ -310,6 +324,325 @@ func partition(array []int, low, high int, steps *[]SortStep) int {
 	return i + 1
 }
 
+func mergeSort(arr []int) SortResult {
+	steps := []SortStep{}
+	array := make([]int, len(arr))
+	copy(array, arr)
+	n := len(array)
+
+	mergeSortHelper(array, 0, n-1, &steps)
+
+	sortedIndices := make([]int, n)
+	for i := 0; i < n; i++ {
+		sortedIndices[i] = i
+	}
+	steps = append(steps, SortStep{
+		Array:  copyArray(array),
+		Sorted: sortedIndices,
+	})
+
+	return SortResult{Steps: steps, Name: "Merge Sort"}
+}
+
+func mergeSortHelper(array []int, left, right int, steps *[]SortStep) {
+	if left < right {
+		middle := left + (right-left)/2
+
+		*steps = append(*steps, SortStep{
+			Array: copyArray(array),
+		})
+
+		mergeSortHelper(array, left, middle, steps)
+		mergeSortHelper(array, middle+1, right, steps)
+		merge(array, left, middle, right, steps)
+	}
+}
+
+func merge(array []int, left, middle, right int, steps *[]SortStep) {
+	n1 := middle - left + 1
+	n2 := right - middle
+
+	L := make([]int, n1)
+	R := make([]int, n2)
+
+	for i := 0; i < n1; i++ {
+		L[i] = array[left+i]
+	}
+	for j := 0; j < n2; j++ {
+		R[j] = array[middle+1+j]
+	}
+
+	i := 0
+	j := 0
+	k := left
+
+	currentComparing := []int{}
+	for ci := left; ci <= right; ci++ {
+		currentComparing = append(currentComparing, ci)
+	}
+	*steps = append(*steps, SortStep{
+		Array:     copyArray(array),
+		Comparing: currentComparing,
+	})
+
+	for i < n1 && j < n2 {
+		*steps = append(*steps, SortStep{
+			Array:     copyArray(array),
+			Comparing: []int{left + i, middle + 1 + j},
+		})
+		if L[i] <= R[j] {
+			array[k] = L[i]
+			i++
+		} else {
+			array[k] = R[j]
+			j++
+		}
+		*steps = append(*steps, SortStep{
+			Array: copyArray(array),
+		})
+		k++
+	}
+
+	for i < n1 {
+		array[k] = L[i]
+		*steps = append(*steps, SortStep{
+			Array: copyArray(array),
+		})
+		i++
+		k++
+	}
+
+	for j < n2 {
+		array[k] = R[j]
+		*steps = append(*steps, SortStep{
+			Array: copyArray(array),
+		})
+		j++
+		k++
+	}
+
+	mergedSegmentIndices := make([]int, right-left+1)
+	for idx := 0; idx <= right-left; idx++ {
+		mergedSegmentIndices[idx] = left + idx
+	}
+	*steps = append(*steps, SortStep{
+		Array:  copyArray(array),
+		Sorted: mergedSegmentIndices,
+	})
+}
+
+func heapSort(arr []int) SortResult {
+	steps := []SortStep{}
+	array := make([]int, len(arr))
+	copy(array, arr)
+	n := len(array)
+
+	for i := n/2 - 1; i >= 0; i-- {
+		heapify(array, n, i, &steps)
+	}
+
+	for i := n - 1; i > 0; i-- {
+		steps = append(steps, SortStep{
+			Array:    copyArray(array),
+			Swapping: []int{0, i},
+		})
+		array[0], array[i] = array[i], array[0]
+
+		sortedPart := make([]int, n-i)
+		for j := 0; j < n-i; j++ {
+			sortedPart[j] = n - 1 - j
+		}
+		steps = append(steps, SortStep{
+			Array:  copyArray(array),
+			Sorted: sortedPart, 
+		})
+
+		heapify(array, i, 0, &steps)
+	}
+
+	sortedIndices := make([]int, n)
+	for i := 0; i < n; i++ {
+		sortedIndices[i] = i
+	}
+	steps = append(steps, SortStep{
+		Array:  copyArray(array),
+		Sorted: sortedIndices,
+	})
+
+	return SortResult{Steps: steps, Name: "Heap Sort"}
+}
+
+func heapify(array []int, n, i int, steps *[]SortStep) {
+	largest := i
+	l := 2*i + 1
+	r := 2*i + 2
+
+	if l < n {
+		*steps = append(*steps, SortStep{
+			Array:     copyArray(array),
+			Comparing: []int{l, largest},
+		})
+		if array[l] > array[largest] {
+			largest = l
+		}
+	}
+
+	if r < n {
+		*steps = append(*steps, SortStep{
+			Array:     copyArray(array),
+			Comparing: []int{r, largest},
+		})
+		if array[r] > array[largest] {
+			largest = r
+		}
+	}
+
+	if largest != i {
+		*steps = append(*steps, SortStep{
+			Array:    copyArray(array),
+			Swapping: []int{i, largest},
+		})
+		array[i], array[largest] = array[largest], array[i]
+		*steps = append(*steps, SortStep{ 
+			Array: copyArray(array),
+		})
+
+		heapify(array, n, largest, steps)
+	}
+}
+
+func shellSort(arr []int) SortResult {
+	steps := []SortStep{}
+	array := make([]int, len(arr))
+	copy(array, arr)
+	n := len(array)
+
+	for gap := n / 2; gap > 0; gap /= 2 {
+		steps = append(steps, SortStep{
+			Array: copyArray(array),
+		})
+		for i := gap; i < n; i++ {
+			temp := array[i]
+			j := i
+
+			steps = append(steps, SortStep{
+				Array:     copyArray(array),
+				Comparing: []int{j, j - gap}, 
+			})
+
+			for j >= gap && array[j-gap] > temp {
+				steps = append(steps, SortStep{
+					Array:     copyArray(array),
+					Comparing: []int{j - gap, i}, 
+				})
+				array[j] = array[j-gap]
+				steps = append(steps, SortStep{ 
+					Array: copyArray(array),
+				})
+				j -= gap
+			}
+			array[j] = temp
+			if i != j { 
+				steps = append(steps, SortStep{ 
+					Array: copyArray(array),
+				})
+			}
+		}
+		
+	}
+
+	sortedIndices := make([]int, n)
+	for i := 0; i < n; i++ {
+		sortedIndices[i] = i
+	}
+	steps = append(steps, SortStep{
+		Array:  copyArray(array),
+		Sorted: sortedIndices,
+	})
+
+	return SortResult{Steps: steps, Name: "Shell Sort"}
+}
+
+func cocktailShakerSort(arr []int) SortResult {
+	steps := []SortStep{}
+	array := make([]int, len(arr))
+	copy(array, arr)
+	n := len(array)
+	swapped := true
+	start := 0
+	end := n - 1
+
+	for swapped {
+		swapped = false
+
+		for i := start; i < end; i++ {
+			steps = append(steps, SortStep{
+				Array:     copyArray(array),
+				Comparing: []int{i, i + 1},
+			})
+			if array[i] > array[i+1] {
+				steps = append(steps, SortStep{
+					Array:    copyArray(array),
+					Swapping: []int{i, i + 1},
+				})
+				array[i], array[i+1] = array[i+1], array[i]
+				steps = append(steps, SortStep{Array: copyArray(array)})
+				swapped = true
+			}
+		}
+		if !swapped {
+			break
+		}
+		end--
+
+		currentSorted := []int{end + 1}
+		for k := 0; k < start; k++ {
+			currentSorted = append(currentSorted, k)
+		}
+		steps = append(steps, SortStep{
+			Array:  copyArray(array),
+			Sorted: currentSorted,
+		})
+
+		swapped = false
+		for i := end - 1; i >= start; i-- {
+			steps = append(steps, SortStep{
+				Array:     copyArray(array),
+				Comparing: []int{i, i + 1},
+			})
+			if array[i] > array[i+1] {
+				steps = append(steps, SortStep{
+					Array:    copyArray(array),
+					Swapping: []int{i, i + 1},
+				})
+				array[i], array[i+1] = array[i+1], array[i]
+				steps = append(steps, SortStep{Array: copyArray(array)})	
+				swapped = true
+			}
+		}
+		start++
+
+		currentSorted = []int{start -1} 
+		for k := n -1; k > end; k-- {
+			currentSorted = append(currentSorted, k)
+		}
+		steps = append(steps, SortStep{
+			Array:  copyArray(array),
+			Sorted: currentSorted,
+		})
+	}
+
+	sortedIndices := make([]int, n)
+	for i := 0; i < n; i++ {
+		sortedIndices[i] = i
+	}
+	steps = append(steps, SortStep{
+		Array:  copyArray(array),
+		Sorted: sortedIndices,
+	})
+	return SortResult{Steps: steps, Name: "Cocktail Shaker Sort"}
+}
+
 func copyArray(arr []int) []int {
 	result := make([]int, len(arr))
 	copy(result, arr)
@@ -323,4 +656,3 @@ func minifyContent(content []byte, mediaType string) ([]byte, error) {
 
 	return m.Bytes(mediaType, content)
 }
-

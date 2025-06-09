@@ -31,6 +31,38 @@ function sortingApp() {
       averageCase: "O(n log n)",
       worstCase: "O(n^2)",
       space: "O(log n)"
+    },
+    merge: {
+      name: "Merge Sort",
+      description: "A divide-and-conquer algorithm that divides the array into halves, sorts them recursively, and then merges them.",
+      bestCase: "O(n log n)",
+      averageCase: "O(n log n)",
+      worstCase: "O(n log n)",
+      space: "O(n)"
+    },
+    heap: {
+      name: "Heap Sort",
+      description: "A comparison-based algorithm using a binary heap. It builds a max heap, then repeatedly extracts the max element.",
+      bestCase: "O(n log n)",
+      averageCase: "O(n log n)",
+      worstCase: "O(n log n)",
+      space: "O(1)"
+    },
+    shell: {
+      name: "Shell Sort",
+      description: "An improvement over insertion sort that allows comparison and exchange of items that are far apart, using decreasing gap intervals.",
+      bestCase: "O(n log n)",
+      averageCase: "O(n (log n)^2)",
+      worstCase: "O(n^2)",
+      space: "O(1)"
+    },
+    cocktail: {
+      name: "Cocktail Shaker Sort",
+      description: "A bidirectional bubble sort that sorts in both directions on each pass through the list.",
+      bestCase: "O(n)",
+      averageCase: "O(n^2)",
+      worstCase: "O(n^2)",
+      space: "O(1)"
     }
   };
 
