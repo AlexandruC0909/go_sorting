@@ -1,0 +1,165 @@
+function sortingApp() {
+  return {
+    algorithm: "bubble",
+    arraySize: 20,
+    currentArray: [],
+    sortResult: null,
+    currentStep: -1,
+    isPlaying: false,
+    isLoading: false,
+    speed: 5,
+    comparingIndices: [],
+    swappingIndices: [],
+    sortedIndices: [],
+
+    init() {
+      this.generateArray();
+    },
+
+    async generateArray() {
+      try {
+        const response = await fetch("/generate?size=" + this.arraySize);
+        const data = await response.json();
+        this.currentArray = data.array;
+        this.resetVisualization();
+      } catch (error) {
+        console.error("Error generating array:", error);
+      }
+    },
+
+    pauseAnimation() {
+      this.isPlaying = false;
+      console.log("Animation paused");
+    },
+
+    async startOrResumeAnimation() {
+      console.log("startOrResumeAnimation called");
+      if (!this.currentArray || this.currentArray.length === 0) {
+        console.log("Cannot start: No array generated.");
+        return;
+      }
+
+      if (!this.sortResult || this.sortResult.steps.length === 0) {
+        console.log("No sort result found, calling startSort...");
+        await this.startSort();
+        if (!this.sortResult || this.sortResult.steps.length === 0) {
+          console.error("Failed to get sort steps.");
+          this.isPlaying = false;
+          return;
+        }
+      }
+
+      console.log("Setting isPlaying to true and starting animation loop.");
+      this.isPlaying = true;
+      this.playAnimation();
+    },
+
+    async startSort() {
+      this.isLoading = true;
+      // Reset state for a new sort operation
+      this.sortResult = null;
+      this.currentStep = -1;
+      this.comparingIndices = [];
+      this.swappingIndices = [];
+      this.sortedIndices = [];
+      this.isPlaying = false; // Ensure animation is stopped
+
+      try {
+        const response = await fetch("/sort", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            array: this.currentArray,
+            algorithm: this.algorithm,
+          }),
+        });
+        if (!response.ok) {
+          throw new Error("HTTP error! status: " + response.status);
+        }
+        const result = await response.json();
+        if (result && result.steps && result.steps.length > 0) {
+          this.sortResult = result;
+          console.log("Sort completed with", result.steps.length, "steps");
+        } else {
+          console.error("Invalid sort result received");
+          this.sortResult = null;
+        }
+        this.isLoading = false;
+      } catch (error) {
+        console.error("Error sorting:", error);
+        this.isLoading = false;
+        this.sortResult = null;
+      }
+    },
+
+    async playAnimation() {
+      // This function will be more thoroughly refactored in the next step.
+      // For now, ensure it respects this.isPlaying and can be called by startOrResumeAnimation.
+      if (
+        !this.sortResult ||
+        !this.sortResult.steps ||
+        this.sortResult.steps.length === 0
+      ) {
+        console.log("No sort result for playAnimation");
+        this.isPlaying = false; // Ensure consistency
+        return;
+      }
+
+      // If currentStep indicates a completed animation, reset to play again.
+      if (this.currentStep >= this.sortResult.steps.length - 1) {
+        this.currentStep = -1;
+        this.resetVisualizationStateForAnimation(); // Prepare for a new run
+      }
+
+      let startFrom = this.currentStep > -1 ? this.currentStep : 0;
+      if (startFrom === 0 && this.currentStep === -1) {
+        // if truly starting from the beginning
+        this.resetVisualizationStateForAnimation();
+      }
+
+      for (let i = startFrom; i < this.sortResult.steps.length; i++) {
+        if (!this.isPlaying) {
+          console.log("Animation paused at step", i);
+          this.currentStep = i; // Save progress
+          return;
+        }
+        this.currentStep = i;
+        const step = this.sortResult.steps[i];
+        this.currentArray = [...step.array];
+        this.comparingIndices = step.comparing || [];
+        this.swappingIndices = step.swapping || [];
+        this.sortedIndices = step.sorted || [];
+        await this.sleep(1100 - this.speed * 100);
+      }
+
+      if (this.isPlaying) {
+        // Animation completed
+        this.isPlaying = false;
+        this.currentStep = -1; // Reset for next time
+        this.sortedIndices = this.currentArray.map((_, idx) => idx); // Mark all as sorted
+      }
+    },
+
+    resetVisualizationStateForAnimation() {
+      // Does not reset currentArray or sortResult
+      this.comparingIndices = [];
+      this.swappingIndices = [];
+      this.sortedIndices = [];
+      // currentStep reset is handled by the caller or within playAnimation logic
+    },
+
+    resetVisualization() {
+      // Called by Generate Array or when new sort is initiated
+      this.currentStep = -1;
+      this.comparingIndices = [];
+      this.swappingIndices = [];
+      this.sortedIndices = [];
+      this.sortResult = null; // This is key, new sort needed
+      this.isPlaying = false; // Stop any ongoing animation
+    },
+
+    sleep(ms) {
+      return new Promise((resolve) => setTimeout(resolve, ms));
+    },
+  };
+}
