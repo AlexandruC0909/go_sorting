@@ -104,12 +104,24 @@ function sortingApp() {
 
     async generateArray() {
       try {
-        const response = await fetch("/generate?size=" + this.arraySize);
-        const data = await response.json();
-        this.currentArray = data.array;
+        const size = parseInt(this.arraySize); 
+        if (isNaN(size) || size < 5 || size > 50) { 
+            console.error("Invalid array size:", this.arraySize);
+            this.currentArray = []; 
+            this.resetVisualization();
+            return;
+        }
+
+        const newArray = [];
+        for (let i = 0; i < size; i++) {
+          newArray.push(Math.floor(Math.random() * 100) + 1);
+        }
+        this.currentArray = newArray;
         this.resetVisualization();
       } catch (error) {
-        console.error("Error generating array:", error);
+        console.error("Error generating array locally:", error);
+        this.currentArray = [];
+        this.resetVisualization();
       }
     },
 

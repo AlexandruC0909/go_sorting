@@ -39,7 +39,6 @@ func main() {
     mux := http.NewServeMux()
 	mux.HandleFunc("/", homeHandler)
 	mux.HandleFunc("/sort", sortHandler)
-	mux.HandleFunc("/generate", generateHandler)
 
     mux.Handle("/static/", http.StripPrefix("/static/", http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
         filePath := r.URL.Path
@@ -110,23 +109,6 @@ func homeHandler(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return
 	}
-}
-
-func generateHandler(w http.ResponseWriter, r *http.Request) {
-	sizeStr := r.URL.Query().Get("size")
-	size, err := strconv.Atoi(sizeStr)
-	if err != nil || size < 5 || size > 50 {
-		size = 20
-	}
-	
-	rand.Seed(time.Now().UnixNano())
-	array := make([]int, size)
-	for i := range array {
-		array[i] = rand.Intn(100) + 1
-	}
-	
-	w.Header().Set("Content-Type", "application/json")
-	json.NewEncoder(w).Encode(map[string][]int{"array": array})
 }
 
 func sortHandler(w http.ResponseWriter, r *http.Request) {
