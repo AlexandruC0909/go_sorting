@@ -151,14 +151,12 @@ func bubbleSort(arr []int) SortResult {
 	
 	for i := 0; i < n-1; i++ {
 		for j := 0; j < n-i-1; j++ {
-			// Show comparison
 			steps = append(steps, SortStep{
 				Array:     copyArray(array),
 				Comparing: []int{j, j + 1},
 			})
 			
 			if array[j] > array[j+1] {
-				// Show swap
 				steps = append(steps, SortStep{
 					Array:    copyArray(array),
 					Swapping: []int{j, j + 1},
@@ -168,7 +166,6 @@ func bubbleSort(arr []int) SortResult {
 			}
 		}
 		
-		// Mark as sorted
 		sorted := make([]int, i+1)
 		for k := 0; k <= i; k++ {
 			sorted[k] = n - 1 - k

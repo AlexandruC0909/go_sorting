@@ -56,13 +56,12 @@ function sortingApp() {
 
     async startSort() {
       this.isLoading = true;
-      // Reset state for a new sort operation
       this.sortResult = null;
       this.currentStep = -1;
       this.comparingIndices = [];
       this.swappingIndices = [];
       this.sortedIndices = [];
-      this.isPlaying = false; // Ensure animation is stopped
+      this.isPlaying = false;
 
       try {
         const response = await fetch("/sort", {
@@ -93,34 +92,30 @@ function sortingApp() {
     },
 
     async playAnimation() {
-      // This function will be more thoroughly refactored in the next step.
-      // For now, ensure it respects this.isPlaying and can be called by startOrResumeAnimation.
       if (
         !this.sortResult ||
         !this.sortResult.steps ||
         this.sortResult.steps.length === 0
       ) {
         console.log("No sort result for playAnimation");
-        this.isPlaying = false; // Ensure consistency
+        this.isPlaying = false; 
         return;
       }
 
-      // If currentStep indicates a completed animation, reset to play again.
       if (this.currentStep >= this.sortResult.steps.length - 1) {
         this.currentStep = -1;
-        this.resetVisualizationStateForAnimation(); // Prepare for a new run
+        this.resetVisualizationStateForAnimation(); 
       }
 
       let startFrom = this.currentStep > -1 ? this.currentStep : 0;
       if (startFrom === 0 && this.currentStep === -1) {
-        // if truly starting from the beginning
         this.resetVisualizationStateForAnimation();
       }
 
       for (let i = startFrom; i < this.sortResult.steps.length; i++) {
         if (!this.isPlaying) {
           console.log("Animation paused at step", i);
-          this.currentStep = i; // Save progress
+          this.currentStep = i; 
           return;
         }
         this.currentStep = i;
@@ -133,29 +128,25 @@ function sortingApp() {
       }
 
       if (this.isPlaying) {
-        // Animation completed
         this.isPlaying = false;
-        this.currentStep = -1; // Reset for next time
-        this.sortedIndices = this.currentArray.map((_, idx) => idx); // Mark all as sorted
+        this.currentStep = -1; 
+        this.sortedIndices = this.currentArray.map((_, idx) => idx); 
       }
     },
 
     resetVisualizationStateForAnimation() {
-      // Does not reset currentArray or sortResult
       this.comparingIndices = [];
       this.swappingIndices = [];
       this.sortedIndices = [];
-      // currentStep reset is handled by the caller or within playAnimation logic
     },
 
     resetVisualization() {
-      // Called by Generate Array or when new sort is initiated
       this.currentStep = -1;
       this.comparingIndices = [];
       this.swappingIndices = [];
       this.sortedIndices = [];
-      this.sortResult = null; // This is key, new sort needed
-      this.isPlaying = false; // Stop any ongoing animation
+      this.sortResult = null; 
+      this.isPlaying = false;
     },
 
     sleep(ms) {
