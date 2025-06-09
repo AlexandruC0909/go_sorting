@@ -2,95 +2,103 @@ function sortingApp() {
   const algorithmData = {
     bubble: {
       name: "Bubble Sort",
-      description: "A simple comparison sort algorithm. It repeatedly steps through the list, compares adjacent elements and swaps them if they are in the wrong order.",
+      description:
+        "A simple comparison sort algorithm. It repeatedly steps through the list, compares adjacent elements and swaps them if they are in the wrong order.",
       bestCase: "O(n)",
       averageCase: "O(n^2)",
       worstCase: "O(n^2)",
-      space: "O(1)"
+      space: "O(1)",
     },
     selection: {
       name: "Selection Sort",
-      description: "An in-place comparison sort. It divides the input list into two parts: a sorted sublist of items which is built up from left to right and a sublist of the remaining unsorted items.",
+      description:
+        "An in-place comparison sort. It divides the input list into two parts: a sorted sublist of items which is built up from left to right and a sublist of the remaining unsorted items.",
       bestCase: "O(n^2)",
       averageCase: "O(n^2)",
       worstCase: "O(n^2)",
-      space: "O(1)"
+      space: "O(1)",
     },
     insertion: {
       name: "Insertion Sort",
-      description: "A simple sorting algorithm that builds the final sorted array one item at a time. It is much less efficient on large lists than more advanced algorithms such as quicksort, heapsort, or merge sort.",
+      description:
+        "A simple sorting algorithm that builds the final sorted array one item at a time. It is much less efficient on large lists than more advanced algorithms such as quicksort, heapsort, or merge sort.",
       bestCase: "O(n)",
       averageCase: "O(n^2)",
       worstCase: "O(n^2)",
-      space: "O(1)"
+      space: "O(1)",
     },
     quick: {
       name: "Quick Sort",
-      description: "An efficient, divide-and-conquer sorting algorithm. It works by selecting a 'pivot' element from the array and partitioning the other elements into two sub-arrays, according to whether they are less than or greater than the pivot.",
+      description:
+        "An efficient, divide-and-conquer sorting algorithm. It works by selecting a 'pivot' element from the array and partitioning the other elements into two sub-arrays, according to whether they are less than or greater than the pivot.",
       bestCase: "O(n log n)",
       averageCase: "O(n log n)",
       worstCase: "O(n^2)",
-      space: "O(log n)"
+      space: "O(log n)",
     },
     merge: {
       name: "Merge Sort",
-      description: "A divide-and-conquer algorithm that divides the array into halves, sorts them recursively, and then merges them.",
+      description:
+        "A divide-and-conquer algorithm that divides the array into halves, sorts them recursively, and then merges them.",
       bestCase: "O(n log n)",
       averageCase: "O(n log n)",
       worstCase: "O(n log n)",
-      space: "O(n)"
+      space: "O(n)",
     },
     heap: {
       name: "Heap Sort",
-      description: "A comparison-based algorithm using a binary heap. It builds a max heap, then repeatedly extracts the max element.",
+      description:
+        "A comparison-based algorithm using a binary heap. It builds a max heap, then repeatedly extracts the max element.",
       bestCase: "O(n log n)",
       averageCase: "O(n log n)",
       worstCase: "O(n log n)",
-      space: "O(1)"
+      space: "O(1)",
     },
     shell: {
       name: "Shell Sort",
-      description: "An improvement over insertion sort that allows comparison and exchange of items that are far apart, using decreasing gap intervals.",
+      description:
+        "An improvement over insertion sort that allows comparison and exchange of items that are far apart, using decreasing gap intervals.",
       bestCase: "O(n log n)",
       averageCase: "O(n (log n)^2)",
       worstCase: "O(n^2)",
-      space: "O(1)"
+      space: "O(1)",
     },
     cocktail: {
       name: "Cocktail Shaker Sort",
-      description: "A bidirectional bubble sort that sorts in both directions on each pass through the list.",
+      description:
+        "A bidirectional bubble sort that sorts in both directions on each pass through the list.",
       bestCase: "O(n)",
       averageCase: "O(n^2)",
       worstCase: "O(n^2)",
-      space: "O(1)"
-    }
+      space: "O(1)",
+    },
   };
 
   return {
     algorithm: "bubble",
-    arraySize: 20,
+    arraySize: 25,
     currentArray: [],
     sortResult: null,
     currentStep: -1,
     isPlaying: false,
     isLoading: false,
-    speed: 5,
+    speed: 10,
     comparingIndices: [],
     swappingIndices: [],
     sortedIndices: [],
     selectedAlgorithmDetails: null,
 
     init() {
-      this.updateAlgorithmDetails(); 
-      this.generateArray(); 
-      this.watchAlgorithm(); 
+      this.updateAlgorithmDetails();
+      this.generateArray();
+      this.watchAlgorithm();
     },
 
     watchAlgorithm() {
-      this.$watch('algorithm', (newValue, oldValue) => {
-        console.log('Algorithm changed from', oldValue, 'to', newValue);
+      this.$watch("algorithm", (newValue, oldValue) => {
+        console.log("Algorithm changed from", oldValue, "to", newValue);
         this.updateAlgorithmDetails();
-        this.resetVisualization(); 
+        this.resetVisualization();
       });
     },
 
@@ -98,18 +106,18 @@ function sortingApp() {
       if (this.algorithm && algorithmData[this.algorithm]) {
         this.selectedAlgorithmDetails = algorithmData[this.algorithm];
       } else {
-        this.selectedAlgorithmDetails = null; 
+        this.selectedAlgorithmDetails = null;
       }
     },
 
     async generateArray() {
       try {
-        const size = parseInt(this.arraySize); 
-        if (isNaN(size) || size < 5 || size > 50) { 
-            console.error("Invalid array size:", this.arraySize);
-            this.currentArray = []; 
-            this.resetVisualization();
-            return;
+        const size = parseInt(this.arraySize);
+        if (isNaN(size) || size < 5 || size > 50) {
+          console.error("Invalid array size:", this.arraySize);
+          this.currentArray = [];
+          this.resetVisualization();
+          return;
         }
 
         const newArray = [];
@@ -153,7 +161,7 @@ function sortingApp() {
     },
 
     async startSort() {
-      this.updateAlgorithmDetails(); 
+      this.updateAlgorithmDetails();
       this.isLoading = true;
       this.sortResult = null;
       this.currentStep = -1;
@@ -197,13 +205,13 @@ function sortingApp() {
         this.sortResult.steps.length === 0
       ) {
         console.log("No sort result for playAnimation");
-        this.isPlaying = false; 
+        this.isPlaying = false;
         return;
       }
 
       if (this.currentStep >= this.sortResult.steps.length - 1) {
         this.currentStep = -1;
-        this.resetVisualizationStateForAnimation(); 
+        this.resetVisualizationStateForAnimation();
       }
 
       let startFrom = this.currentStep > -1 ? this.currentStep : 0;
@@ -214,7 +222,7 @@ function sortingApp() {
       for (let i = startFrom; i < this.sortResult.steps.length; i++) {
         if (!this.isPlaying) {
           console.log("Animation paused at step", i);
-          this.currentStep = i; 
+          this.currentStep = i;
           return;
         }
         this.currentStep = i;
@@ -223,13 +231,13 @@ function sortingApp() {
         this.comparingIndices = step.comparing || [];
         this.swappingIndices = step.swapping || [];
         this.sortedIndices = step.sorted || [];
-        await this.sleep(1100 - this.speed * 100);
+        await this.sleep(1100 - this.speed * 70);
       }
 
       if (this.isPlaying) {
         this.isPlaying = false;
-        this.currentStep = -1; 
-        this.sortedIndices = this.currentArray.map((_, idx) => idx); 
+        this.currentStep = -1;
+        this.sortedIndices = this.currentArray.map((_, idx) => idx);
       }
     },
 
@@ -244,7 +252,7 @@ function sortingApp() {
       this.comparingIndices = [];
       this.swappingIndices = [];
       this.sortedIndices = [];
-      this.sortResult = null; 
+      this.sortResult = null;
       this.isPlaying = false;
     },
 
