@@ -96,7 +96,6 @@ function sortingApp() {
 
     watchAlgorithm() {
       this.$watch("algorithm", (newValue, oldValue) => {
-        console.log("Algorithm changed from", oldValue, "to", newValue);
         this.updateAlgorithmDetails();
         this.resetVisualization();
       });
@@ -111,6 +110,8 @@ function sortingApp() {
     },
 
     async generateArray() {
+      this.pauseAnimation();
+      this.resetVisualization();
       try {
         const size = parseInt(this.arraySize);
         if (isNaN(size) || size < 5 || size > 50) {
@@ -135,11 +136,9 @@ function sortingApp() {
 
     pauseAnimation() {
       this.isPlaying = false;
-      console.log("Animation paused");
     },
 
     async startOrResumeAnimation() {
-      console.log("startOrResumeAnimation called");
       if (!this.currentArray || this.currentArray.length === 0) {
         console.log("Cannot start: No array generated.");
         return;
@@ -155,7 +154,6 @@ function sortingApp() {
         }
       }
 
-      console.log("Setting isPlaying to true and starting animation loop.");
       this.isPlaying = true;
       this.playAnimation();
     },
@@ -221,7 +219,6 @@ function sortingApp() {
 
       for (let i = startFrom; i < this.sortResult.steps.length; i++) {
         if (!this.isPlaying) {
-          console.log("Animation paused at step", i);
           this.currentStep = i;
           return;
         }
