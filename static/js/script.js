@@ -97,7 +97,7 @@ function sortingApp() {
     watchAlgorithm() {
       this.$watch("algorithm", (newValue, oldValue) => {
         this.updateAlgorithmDetails();
-        this.resetVisualization();
+        this.generateArray();
       });
     },
 
@@ -258,3 +258,17 @@ function sortingApp() {
     },
   };
 }
+
+/**
+ * Reset the sorted indices back to an empty array.
+ */
+
+/**
+ * Reset the sort result to null, which means that no sorting
+ * algorithm has been started yet.
+ */
+
+/**
+ * Reset the isPlaying flag to false, which means that the animation
+ * is not currently running.
+ */
