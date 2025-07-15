@@ -21,8 +21,8 @@ This is a web-based tool that visualizes various sorting algorithms. It's built 
 
 1. **Clone the repository:**
    ```bash
-   git clone https://github.com/your-username/sorting-visualizer.git
-   cd sorting-visualizer
+   git clone https://github.com/AlexandruC0909/go_sorting.git
+   cd go_sorting
    ```
 2. **Run the Go server:**
    ```bash
