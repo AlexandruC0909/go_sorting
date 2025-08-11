@@ -270,9 +270,19 @@ func quickSort(arr []int) SortResult {
 	steps := []SortStep{}
 	array := make([]int, len(arr))
 	copy(array, arr)
-	
+	n := len(array)
+
 	quickSortHelper(array, 0, len(array)-1, &steps)
-	
+
+	sortedIndices := make([]int, n)
+	for i := 0; i < n; i++ {
+		sortedIndices[i] = i
+	}
+	steps = append(steps, SortStep{
+		Array:  copyArray(array),
+		Sorted: sortedIndices,
+	})
+
 	return SortResult{Steps: steps, Name: "Quick Sort"}
 }
 
